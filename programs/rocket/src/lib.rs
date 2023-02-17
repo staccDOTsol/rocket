@@ -1,14 +1,17 @@
 use std::mem::size_of;
 
 use borsh::{BorshDeserialize, BorshSerialize};
-use anchor_lang::{error, solana_program::system_program, prelude::*};
-use clockwork_sdk::state::{Thread, ThreadResponse};
+use anchor_lang::{error, InstructionData, solana_program::system_program, prelude::*};
+use clockwork_sdk::{state::{Thread, ThreadResponse}, ThreadProgram};
 
 declare_id!("7vWEUWH7L9VJCZjVahFwpWstZqfmGTSK122VVtvdvzFz");
 
 
 #[program]
 pub mod rpsx {
+    use anchor_lang::{solana_program::instruction::Instruction, system_program::{transfer, Transfer}};
+    use clockwork_sdk::state::Trigger;
+
     pub use super::*;
 
     pub fn new_game(ctx: Context<NewGame>) -> Result<()> {
@@ -61,17 +64,58 @@ pub mod rpsx {
         let game = &mut ctx.accounts.game;
         let player = &mut ctx.accounts.player;
         let piece = &mut ctx.accounts.piece;
+        let system_program = &ctx.accounts.system_program;
+        let thread = &ctx.accounts.thread;
+        let thread_program = &ctx.accounts.thread_program;
        
         // Add a piece to the board.
         let board_position = &game.board[x as usize][y as usize];
         require!(board_position.is_none(), GameError::BoardPositionOccupied);
         game.board[x as usize][y as usize] = Some(player.team.clone());
+
+        // Spawn a thread to move this piece.
+        clockwork_sdk::cpi::thread_create(
+            CpiContext::new_with_signer(
+                thread_program.to_account_info(),
+                clockwork_sdk::cpi::ThreadCreate {
+                    authority: game.to_account_info(),
+                    payer: authority.to_account_info(),
+                    system_program: system_program.to_account_info(),
+                    thread: thread.to_account_info()
+                },
+                &[&[SEED_GAME, &[game.bump]]]
+            ),
+            format!("{}", game.num_pieces),
+            Instruction {
+                program_id: crate::ID,
+                accounts: crate::accounts::MovePiece {
+                    game: game.key(),
+                    piece: piece.key(),
+                    thread: thread.key()
+                }.to_account_metas(None),
+                data: crate::instruction::MovePiece{}.data(),
+            }.into(),
+            Trigger::Immediate,
+        )?;
+
+        // Transfer SOL from authority to the thread.
+        // TODO migrate to v2, and remove this extra CPI.
+        transfer(
+            CpiContext::new(
+                system_program.to_account_info(),
+                Transfer {
+                    from: authority.to_account_info(),
+                    to: thread.to_account_info(),
+                },
+            ),
+            1000 * 1000 // Enough for 1000 moves
+        )?;
         
         // Initialize the piece account.
         piece.authority = authority.key();
         piece.bump = *ctx.bumps.get("piece").unwrap();
         piece.id = game.num_pieces;
-        // TODO piece.thread = ;
+        piece.thread = thread.key();
         piece.x = x; 
         piece.y = y; 
 
@@ -86,8 +130,6 @@ pub mod rpsx {
         let game = &mut ctx.accounts.game;
         let piece = &mut ctx.accounts.piece;
 
-        // TODO Find the closest piece.
-        // TODO Move in the direction of the closest piece.
         let maybe_our_team = &game.board[piece.x as usize][piece.y as usize];
         require!(maybe_our_team.is_some(), GameError::InvalidBoardPosition);
 
@@ -121,6 +163,7 @@ pub mod rpsx {
         } else if net_y < 1 {
             piece.y = piece.y.saturating_sub(1);
         };
+
 
         let new_board_position = &game.board[piece.x as usize][piece.y as usize];
         if our_team.can_capture(new_board_position) {
@@ -199,7 +242,13 @@ pub struct NewPiece<'info> {
     pub player: Account<'info, Player>,
 
     #[account(address = system_program::ID)]
-    pub system_program: Program<'info, System>
+    pub system_program: Program<'info, System>,
+
+    #[account(address = Thread::pubkey(game.key(), format!("{}", game.num_pieces)))]
+    pub thread: SystemAccount<'info>,
+
+    #[account(address = clockwork_sdk::ID)]
+    pub thread_program: Program<'info, ThreadProgram>,
 }
 
 #[derive(Accounts)]
