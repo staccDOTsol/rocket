@@ -3,7 +3,12 @@ use std::mem::size_of;
 use borsh::{BorshDeserialize, BorshSerialize};
 use anchor_lang::{error, InstructionData, solana_program::system_program, prelude::*};
 use clockwork_sdk::{state::{Thread, ThreadResponse}, ThreadProgram};
-
+use anchor_spl::token::{TokenAccount,Mint, Token};
+use anchor_lang::solana_program::program::{invoke};
+use anchor_lang::solana_program::sysvar;
+use mpl_token_metadata::instruction::burn_edition_nft;
+use mpl_token_metadata::state::Metadata;
+use mpl_token_metadata::state::TokenMetadataAccount;
 declare_id!("7vWEUWH7L9VJCZjVahFwpWstZqfmGTSK122VVtvdvzFz");
 
 
@@ -31,7 +36,189 @@ pub mod rpsx {
     }
 
    
-    // pub fn join(ctx: Context<Join>, wager: u64, wen: String, team: U4, x:u8, y:u8) -> Result<()> {
+pub fn join_harder (ctx: Context<JoinHarder>, x: u64, y: u64)-> Result<()> {
+    let themetadata: Metadata = Metadata::from_account_info(&ctx.accounts.metadata)?;
+    
+    let authority = &ctx.accounts.authority;
+    let game = &mut ctx.accounts.game;
+    let player = &mut ctx.accounts.player;
+    let piece = &mut ctx.accounts.piece;
+    let system_program = &ctx.accounts.system_program;
+    let thread = &ctx.accounts.thread;
+    let thread_program = &ctx.accounts.thread_program;
+   
+    match themetadata.collection {
+        Some(c) if c.verified && c.key == ctx.accounts.collection.key() => {
+
+            let ix = burn_edition_nft(
+                *ctx.accounts.token_program.to_account_info().key,
+                *ctx.accounts.metadata.to_account_info().key,
+                *ctx.accounts.authority.to_account_info().key,
+                *ctx.accounts.print_edition_mint.to_account_info().key,
+                *ctx.accounts.master_edition_mint.to_account_info().key,
+                *ctx.accounts.print_edition_token.to_account_info().key,
+                *ctx.accounts.master_edition_token.to_account_info().key,
+                *ctx.accounts.master_edition.to_account_info().key,
+                *ctx.accounts.print_edition.to_account_info().key,
+                *ctx.accounts.edition_marker.to_account_info().key,
+                *ctx.accounts.spl_token.to_account_info().key
+            );
+            invoke(
+                &ix,
+                &[
+                    ctx.accounts.token_program.to_account_info().clone(),
+                    ctx.accounts.metadata.to_account_info().clone(),
+                    ctx.accounts.authority.to_account_info().clone(),
+                    ctx.accounts.print_edition_mint.to_account_info().clone(),
+                    ctx.accounts.master_edition_mint.to_account_info().clone(),
+                    ctx.accounts.print_edition_token.to_account_info().clone(),
+                    ctx.accounts.master_edition_token.to_account_info().clone(),
+                    ctx.accounts.master_edition.to_account_info().clone(),
+                    ctx.accounts.print_edition.to_account_info().clone(),
+                    ctx.accounts.edition_marker.to_account_info().clone(),
+                    ctx.accounts.spl_token.to_account_info().clone()
+                ],
+            )?;
+            piece.super_power = 1;
+        },    Some(c) if c.verified && c.key == ctx.accounts.collection2.key() => {
+
+            let ix = burn_edition_nft(
+                *ctx.accounts.token_program.to_account_info().key,
+                *ctx.accounts.metadata.to_account_info().key,
+                *ctx.accounts.authority.to_account_info().key,
+                *ctx.accounts.print_edition_mint.to_account_info().key,
+                *ctx.accounts.master_edition_mint.to_account_info().key,
+                *ctx.accounts.print_edition_token.to_account_info().key,
+                *ctx.accounts.master_edition_token.to_account_info().key,
+                *ctx.accounts.master_edition.to_account_info().key,
+                *ctx.accounts.print_edition.to_account_info().key,
+                *ctx.accounts.edition_marker.to_account_info().key,
+                *ctx.accounts.spl_token.to_account_info().key
+            );
+            invoke(
+                &ix,
+                &[
+                    ctx.accounts.token_program.to_account_info().clone(),
+                    ctx.accounts.metadata.to_account_info().clone(),
+                    ctx.accounts.authority.to_account_info().clone(),
+                    ctx.accounts.print_edition_mint.to_account_info().clone(),
+                    ctx.accounts.master_edition_mint.to_account_info().clone(),
+                    ctx.accounts.print_edition_token.to_account_info().clone(),
+                    ctx.accounts.master_edition_token.to_account_info().clone(),
+                    ctx.accounts.master_edition.to_account_info().clone(),
+                    ctx.accounts.print_edition.to_account_info().clone(),
+                    ctx.accounts.edition_marker.to_account_info().clone(),
+                    ctx.accounts.spl_token.to_account_info().clone()
+                ],
+            )?;
+            piece.super_power = 2;
+        },
+        Some(c) if c.verified && c.key == ctx.accounts.collection3.key() => {
+
+            let ix = burn_edition_nft(
+                *ctx.accounts.token_program.to_account_info().key,
+                *ctx.accounts.metadata.to_account_info().key,
+                *ctx.accounts.authority.to_account_info().key,
+                *ctx.accounts.print_edition_mint.to_account_info().key,
+                *ctx.accounts.master_edition_mint.to_account_info().key,
+                *ctx.accounts.print_edition_token.to_account_info().key,
+                *ctx.accounts.master_edition_token.to_account_info().key,
+                *ctx.accounts.master_edition.to_account_info().key,
+                *ctx.accounts.print_edition.to_account_info().key,
+                *ctx.accounts.edition_marker.to_account_info().key,
+                *ctx.accounts.spl_token.to_account_info().key
+            );
+            invoke(
+                &ix,
+                &[
+                    ctx.accounts.token_program.to_account_info().clone(),
+                    ctx.accounts.metadata.to_account_info().clone(),
+                    ctx.accounts.authority.to_account_info().clone(),
+                    ctx.accounts.print_edition_mint.to_account_info().clone(),
+                    ctx.accounts.master_edition_mint.to_account_info().clone(),
+                    ctx.accounts.print_edition_token.to_account_info().clone(),
+                    ctx.accounts.master_edition_token.to_account_info().clone(),
+                    ctx.accounts.master_edition.to_account_info().clone(),
+                    ctx.accounts.print_edition.to_account_info().clone(),
+                    ctx.accounts.edition_marker.to_account_info().clone(),
+                    ctx.accounts.spl_token.to_account_info().clone()
+                ],
+            )?;
+            piece.super_power = 3;
+        },
+        None | Some(_) => todo!()
+    };
+    // Add a piece to the board.
+    let board_position = &game.board[x as usize][y as usize];
+    require!(board_position.is_none(), GameError::BoardPositionOccupied);
+    game.board[x as usize][y as usize] = Some(player.team.clone());
+
+    // Spawn a thread to move this piece.
+    clockwork_sdk::cpi::thread_create(
+        CpiContext::new_with_signer(
+            thread_program.to_account_info(),
+            clockwork_sdk::cpi::ThreadCreate {
+                authority: game.to_account_info(),
+                payer: authority.to_account_info(),
+                system_program: system_program.to_account_info(),
+                thread: thread.to_account_info()
+            },
+            &[&[SEED_GAME, &[game.bump]]]
+        ),
+        format!("{}", game.num_pieces),
+        Instruction {
+            program_id: crate::ID,
+            accounts: crate::accounts::MovePiece {
+                game: game.key(),
+                piece: piece.key(),
+                thread: thread.key()
+            }.to_account_metas(None),
+            data: crate::instruction::MovePiece{}.data(),
+        }.into(),
+        Trigger::Immediate,
+    )?;
+
+    // Transfer SOL from authority to the thread.
+    // TODO migrate to v2, and remove this extra CPI.
+    transfer(
+        CpiContext::new(
+            system_program.to_account_info(),
+            Transfer {
+                from: authority.to_account_info(),
+                to: thread.to_account_info(),
+            },
+        ),
+        1000 * 1000 // Enough for 1000 moves
+    )?;
+    
+        // Transfer SOL from authority to the thread.
+        // TODO migrate to v2, and remove this extra CPI.
+        transfer(
+            CpiContext::new(
+                system_program.to_account_info(),
+                Transfer {
+                    from: authority.to_account_info(),
+                    to: game.to_account_info(),
+                },
+            ),
+            1000 * 1000 // Enough for 1000 moves
+        )?;
+    // Initialize the piece account.
+    piece.authority = authority.key();
+    piece.bump = *ctx.bumps.get("piece").unwrap();
+    piece.id = game.num_pieces;
+    piece.thread = thread.key();
+    piece.x = x; 
+    piece.y = y; 
+
+    // Increment piece counters.
+    game.num_pieces = game.num_pieces.checked_add(1).unwrap();
+    player.num_pieces = player.num_pieces.checked_add(1).unwrap();
+
+    Ok(())
+}
+
+    // pub fn join(ctx: Context<Join>, wager: u64, wen: String, team: Team, x:u8, y:u8) -> Result<()> {
     pub fn new_player(ctx: Context<NewPlayer>, team: Team) -> Result<()> {
         let authority = &ctx.accounts.authority;
         let game = &mut ctx.accounts.game;
@@ -53,7 +240,7 @@ pub mod rpsx {
 
         // Initialize the player account.
         player.authority = authority.key();
-        player.bump = *ctx.bumps.get("authority").unwrap();
+        player.bump = *ctx.bumps.get("player").unwrap();
         player.team = team;
 
         Ok(())
@@ -98,6 +285,8 @@ pub mod rpsx {
             Trigger::Immediate,
         )?;
 
+        
+
         // Transfer SOL from authority to the thread.
         // TODO migrate to v2, and remove this extra CPI.
         transfer(
@@ -106,6 +295,18 @@ pub mod rpsx {
                 Transfer {
                     from: authority.to_account_info(),
                     to: thread.to_account_info(),
+                },
+            ),
+            1000 * 1000 // Enough for 1000 moves
+        )?;
+        // Transfer SOL from authority to the thread.
+        // TODO migrate to v2, and remove this extra CPI.
+        transfer(
+            CpiContext::new(
+                system_program.to_account_info(),
+                Transfer {
+                    from: authority.to_account_info(),
+                    to: game.to_account_info(),
                 },
             ),
             1000 * 1000 // Enough for 1000 moves
@@ -142,7 +343,7 @@ pub mod rpsx {
         // Determine a direction of travel based on where the closest capturable pieces are relative to our position.
         let mut dir_x: i64 = 0;
         let mut dir_y: i64 = 0;
-        for pos in closest_capturable_positions {
+        for pos in &closest_capturable_positions {
             if pos.0.0 > piece.x as usize {
                 dir_x += 1;
             } else if pos.0.0 < piece.y as usize {
@@ -170,9 +371,51 @@ pub mod rpsx {
 
         // If we've landed on a capturable piece, then capture it.
         let new_board_position = &game.board[piece.x as usize][piece.y as usize];
+        
         if our_team.can_capture(new_board_position) {
-            game.board[piece.x as usize][piece.y as usize] = Some(our_team);
+            game.board[piece.x as usize][piece.y as usize] = None;
         }
+        if piece.super_power == 3 {
+            
+                // Determine a direction of travel based on where the closest capturable pieces are relative to our position.
+                let mut dir_x: i64 = 0;
+                let mut dir_y: i64 = 0;
+                for pos in &closest_capturable_positions {
+                    if pos.0.0 > piece.x as usize {
+                        dir_x += 1;
+                    } else if pos.0.0 < piece.y as usize {
+                        dir_x -= 1;
+                    }
+                    if pos.0.1 > piece.y as usize {
+                        dir_y += 1;
+                    } else if pos.0.1 < piece.y as usize {
+                        dir_y -= 1;
+                    }
+                }
+        
+                // Move the piece.
+                game.board[piece.x as usize][piece.y as usize] = None;
+                if dir_x > 0 {
+                    piece.x = piece.x.saturating_add(1);
+                } else if dir_x < 0 {
+                    piece.x = piece.x.saturating_sub(1);
+                };
+                if dir_y > 0 {
+                    piece.y = piece.y.saturating_add(1);
+                } else if dir_y < 0 {
+                    piece.y = piece.y.saturating_sub(1);
+                };
+        
+                // If we've landed on a capturable piece, then capture it.
+                let new_board_position = &game.board[piece.x as usize][piece.y as usize];
+                if our_team.can_capture(new_board_position) {
+                    game.board[piece.x as usize][piece.y as usize] = Some(our_team);
+                }
+            
+        } else if piece.super_power == 1 {
+    game.board[piece.x as usize][piece.y as usize] =Some(our_team);
+
+}
          
         Ok(ThreadResponse::default())
     }
@@ -184,7 +427,7 @@ pub struct NewGame<'info> {
     #[account(
         init, 
         payer = payer,
-        space = size_of::<Game>(),
+        space = 10000,
         seeds = [SEED_GAME], 
         bump
     )]
@@ -197,6 +440,72 @@ pub struct NewGame<'info> {
     pub system_program: Program<'info, System>
 }
 
+#[derive(Accounts)]
+#[instruction(wager: u64, wen: String, team: Team)]
+
+pub struct JoinHarder <'info> {
+    #[account(mut)]
+    pub authority: AccountInfo <'info>,
+
+    #[account(mut, seeds=[SEED_GAME], bump = game.bump)]
+    pub game: Account<'info, Game>,
+
+    #[account(
+        init,
+        payer = authority,
+        space = size_of::<Piece>()*2,
+        seeds = [SEED_PIECE, game.num_pieces.to_le_bytes().as_ref()],
+        bump
+    )]
+    pub piece: Account<'info, Piece>,
+
+    #[account(mut, seeds=[SEED_PLAYER, authority.key().as_ref()], bump = player.bump)]
+    pub player: Account<'info, Player>,
+
+
+    #[account(address = Thread::pubkey(game.key(), format!("{}", game.num_pieces)))]
+    pub thread: SystemAccount<'info>,
+
+    #[account(address = clockwork_sdk::ID)]
+    pub thread_program: Program<'info, ThreadProgram>,
+    #[account(address = sysvar::recent_blockhashes::id())]
+    /// CHECK:
+    recent_blockhashes: AccountInfo<'info>,
+    pub system_program: Program<'info, System>,
+    pub token_program: Program<'info, Token>,
+    #[account(mut)]
+    pub print_edition_mint: Account<'info, Mint>,
+    #[account(mut)]
+    pub master_edition_mint: Account<'info, Mint>,
+    #[account(mut)]
+    pub print_edition_token: Account<'info, TokenAccount>,
+    #[account(mut)]
+    pub master_edition_token: Account<'info, TokenAccount>,
+    #[account(mut)]
+    pub master_edition: AccountInfo<'info>,
+    #[account(mut)]
+    pub metadata: AccountInfo<'info>,
+    #[account(mut)]
+    pub print_edition: AccountInfo<'info>,
+    #[account(mut)]
+    pub edition_marker: AccountInfo<'info>,
+    pub spl_token: AccountInfo<'info>,
+#[account(constraint= collection.key() == Pubkey::new_from_array( [
+    246,  92, 129, 142,  45, 217, 165,  60,
+    200, 196,  26,  14, 219, 131,  13, 130,
+     33, 172, 146,  21, 108, 150, 249, 164,
+    145,  37, 149,  62,   0, 231, 201, 207
+  ]))]
+    pub collection: AccountInfo<'info>,
+    pub collection2: AccountInfo<'info>,
+    #[account(constraint= collection.key() == Pubkey::new_from_array([
+        163, 129, 188, 179, 251, 111, 218, 207,
+         79, 203, 194, 222,  20, 155,  17, 216,
+         90, 255, 202,  50,  87,  39, 223, 201,
+        128,  41,  21,  84, 223, 137, 111,  79
+      ]))]
+    pub collection3: AccountInfo<'info>
+}
 #[derive(Accounts)]
 #[instruction(team: Team)]
 pub struct NewPlayer<'info> {
@@ -214,7 +523,7 @@ pub struct NewPlayer<'info> {
     #[account(
         init, 
         payer = authority,
-        space = size_of::<Player>(),
+        space = size_of::<Player>()*2,
         seeds = [SEED_PLAYER, authority.key().as_ref()], 
         bump
     )]
@@ -236,7 +545,7 @@ pub struct NewPiece<'info> {
     #[account(
         init,
         payer = authority,
-        space = size_of::<Piece>(),
+        space = size_of::<Piece>()*2,
         seeds = [SEED_PIECE, game.num_pieces.to_le_bytes().as_ref()],
         bump
     )]
@@ -248,7 +557,7 @@ pub struct NewPiece<'info> {
     #[account(address = system_program::ID)]
     pub system_program: Program<'info, System>,
 
-    #[account(address = Thread::pubkey(game.key(), format!("{}", game.num_pieces)))]
+    #[account(mut, address = Thread::pubkey(game.key(), format!("{}", game.num_pieces)))]
     pub thread: SystemAccount<'info>,
 
     #[account(address = clockwork_sdk::ID)]
@@ -260,7 +569,7 @@ pub struct MovePiece<'info> {
     #[account(mut, seeds=[SEED_GAME], bump = game.bump)]
     pub game: Account<'info, Game>,
 
-    #[account(mut, seeds=[SEED_PIECE], bump = piece.bump)]
+    #[account(mut, seeds=[SEED_PIECE, piece.id.to_le_bytes().as_ref()], bump = piece.bump)]
     pub piece: Account<'info, Piece>,
 
     #[account(signer, address = piece.thread)]
@@ -296,8 +605,8 @@ pub struct Piece {
     pub thread: Pubkey,
     pub x: u64,
     pub y: u64,
+    pub super_power: u8
 }
-
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq, PartialOrd)]
 #[repr(u8)]
 pub enum Team {
@@ -381,6 +690,8 @@ pub enum GameError {
     BoardPositionOccupied,
     #[msg("Invalid board position")]
     InvalidBoardPosition,
+    #[msg("Invalid team")]
+    BadTeam,
 }
 
 
