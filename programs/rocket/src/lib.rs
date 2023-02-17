@@ -130,45 +130,49 @@ pub mod rpsx {
         let game = &mut ctx.accounts.game;
         let piece = &mut ctx.accounts.piece;
 
+        // Get this piece's current team.
         let maybe_our_team = &game.board[piece.x as usize][piece.y as usize];
         require!(maybe_our_team.is_some(), GameError::InvalidBoardPosition);
 
+        // The the closest capturable positions on the board.
         let board = Box::new(game.board.clone());
         let our_team = maybe_our_team.clone().unwrap();
         let closest_capturable_positions = grid_search(piece.x as usize, piece.y as usize, board, 0, &our_team);
 
-        let mut net_x: i64 = 0;
-        let mut net_y: i64 = 0;
+        // Determine a direction of travel based on where the closest capturable pieces are relative to our position.
+        let mut dir_x: i64 = 0;
+        let mut dir_y: i64 = 0;
         for pos in closest_capturable_positions {
             if pos.0.0 > piece.x as usize {
-                net_x += 1;
+                dir_x += 1;
             } else if pos.0.0 < piece.y as usize {
-                net_x -= 1;
+                dir_x -= 1;
             }
             if pos.0.1 > piece.y as usize {
-                net_y += 1;
+                dir_y += 1;
             } else if pos.0.1 < piece.y as usize {
-                net_y -= 1;
+                dir_y -= 1;
             }
         }
 
-        if net_x > 0 {
-            piece.x = piece.x.checked_add(1).unwrap();
-        } else if net_x < 1 {
+        // Move the piece.
+        game.board[piece.x as usize][piece.y as usize] = None;
+        if dir_x > 0 {
+            piece.x = piece.x.saturating_add(1);
+        } else if dir_x < 0 {
             piece.x = piece.x.saturating_sub(1);
         };
-
-        if net_y > 0 {
-            piece.y = piece.y.checked_add(1).unwrap();
-        } else if net_y < 1 {
+        if dir_y > 0 {
+            piece.y = piece.y.saturating_add(1);
+        } else if dir_y < 0 {
             piece.y = piece.y.saturating_sub(1);
         };
 
-
+        // If we've landed on a capturable piece, then capture it.
         let new_board_position = &game.board[piece.x as usize][piece.y as usize];
         if our_team.can_capture(new_board_position) {
             game.board[piece.x as usize][piece.y as usize] = Some(our_team);
-        };
+        }
          
         Ok(ThreadResponse::default())
     }
