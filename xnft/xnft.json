@@ -1,15 +1,20 @@
 {
   "kind": "app",
   "name": "CrashyCrashy", 
-  "version": "0.1.0",
+  "version": "0.1.138138",
   "description": "the rules: every time the thing crashes, a new ship is launched and will crash in 100s. you can wager to eject; if you do, you win a portion of the funds and then the thing will crash at some random value 0-9seconds  you can wager again to climb back in...",
   "website": "https://twitter.com/STACCoverflow/status/1621532410880966657",
 "tag":  "game",
   "royaltiesPercentage": 3,
   "entrypoints": {
     "default": {
-      "web": "./dist/index.html"
+      "web": "dist/index.html"
     }
-  }
+  },
+  "icon": {
+    "sm": "rocket.jpg",
+    "md": "rocket.jpg",
+    "lg": "rocket.jpg"
 
+  }
 }

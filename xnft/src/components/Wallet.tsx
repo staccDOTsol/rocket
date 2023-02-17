@@ -5,12 +5,10 @@ import {
   import {
     PhantomWalletAdapter
   } from "@solana/wallet-adapter-phantom";
-  import { clusterApiUrl } from "@solana/web3.js";
   import React, { FC, useMemo } from "react";
-import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
   
   export const DEFAULT_ENDPOINT =
-    process.env.NEXT_PUBLIC_SOLANA_URL || "https://api.devnet.solana.com";
+  "https://rpc.helius.xyz/?api-key=8913a285-a5ef-4c35-8d80-03fb276eff2f" || "https://api.devnet.solana.com";
   
   // Default styles that can be overridden by your app
   require("@solana/wallet-adapter-react-ui/styles.css");
@@ -29,8 +27,7 @@ import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
     return (
       <ConnectionProvider endpoint={DEFAULT_ENDPOINT}>
         <WalletProvider wallets={wallets} autoConnect>
-            <WalletModalProvider>
-          {children}</WalletModalProvider>
+          {children}
         </WalletProvider>
       </ConnectionProvider>
     );

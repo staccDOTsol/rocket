@@ -13,9 +13,12 @@ import { Chart } from 'react-charts'
 import { join } from '../client/instructions/join'
 import { play } from '../client/instructions/play'
 import { initialize } from "../client/instructions";
+import { useDidLaunch, useSolanaConnection } from "../hooks/xnft-hooks";
+
 let startTime = new Date().getTime()/1000
 export function HomeScreen() {
     let [gameState, setGameState] = useState<any>()
+    let [theColor, setTheColor] = useState<string>('#43A19E')
     let [wager, setWager] = useState<number>(0.01*10**9)
 async function joinIt(){
 
@@ -34,7 +37,7 @@ async function joinIt(){
   try {
     let tx = new Transaction().add(tx2)
     tx.feePayer = window.xnft?.solana.publicKey 
-    tx.recentBlockhash = (await window.xnft?.solana.connection.getLatestBlockhash()).blockhash 
+    tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash 
   // @ts-ignore
   await window.xnft?.solana.sendAndConfirm(tx)
   }
@@ -61,7 +64,7 @@ async function buttonIt(){
   try {   
      let tx = new Transaction().add(tx3)
     tx.feePayer = window.xnft?.solana.publicKey 
-    tx.recentBlockhash = (await window.xnft?.solana.connection.getLatestBlockhash()).blockhash 
+    tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash 
   // @ts-ignore
   await window.xnft?.solana.sendAndConfirm(tx)
   }
@@ -70,16 +73,14 @@ async function buttonIt(){
    }
 }
     let wallet = useWallet()
-  let [data1, setData] = useState<any>([[startTime, 0]])
-  let [data2, setData2] = useState<any>([[startTime, 0]])
+  let [data1, setData] = useState<any>([])
+  let [data2, setData2] = useState<any>([])
   const data = React.useMemo(
     () => [
       {
         label: 'Wagers',
-        data: data1
-      },{
-        label: 'Players',
-        data: data2
+        data: data1,
+        color: theColor
       }
     ],
     [gameState]
@@ -87,44 +88,59 @@ async function buttonIt(){
  
   const axes = React.useMemo(
     () => [
-      { primary: true, type: 'linear', position: 'bottom',label: 'none' },
-      { type: 'linear', position: 'left' }
+      { responsive: true,primary: true, type: 'linear', position: 'bottom',label: 'none',legend: {
+        display: false,
+      }, },
+      {  responsive: true,type: 'linear', position: 'left',legend: {
+        display: false,
+      }, }
     ],
     []
   )
+
       let [oldWager, setOldWager] = useState<number>(0)
-  let {connected} = useWallet()
-  let connection = window.xnft?.solana.connection 
+
+      let [oldUsers, setOldUsers] = useState<number>(0)
+  const didLaunch = useDidLaunch()
  
+
+  const connection = new Connection("https://rpc.helius.xyz/?api-key=8913a285-a5ef-4c35-8d80-03fb276eff2f")
   let game = (PublicKey.findProgramAddressSync(
     [Buffer.from("gamegame")]
   , PROGRAM_ID))[0]/*
   */
-  setInterval(async function(){
+ useEffect(() => {
+  setTimeout(async function(){
     setGameState(await Game.fetch(connection, game))
+      console.log(gameState)
+      if (gameState){
+        
+        if (gameState.wagers.toNumber() != oldWager){
+          let newColor = '#43A19E';
 
-  }, 5000)
-  useEffect(()=>{
-    if (connected){
-  console.log(gameState)
-  if (gameState){
-    if (gameState.wagers.toNumber() != oldWager){
-      setOldWager(gameState.wagers.toNumber())
-      let tdata = data1 
-      tdata.push([new Date().getTime()/1000, gameState.wagers.toNumber()])
-  setData(tdata)
-  let tdata2 = data2
-  tdata2.push([new Date().getTime()/1000, gameState.numusers])
-setData2(tdata2)
-  console.log(data1)
-    }
-  }
-    }
-  }, [gameState])
+          if (gameState.numUsers != oldUsers){
+            if (gameState.numUsers < oldUsers){
+newColor = '#F94144'
+          }
+       setOldUsers(gameState.numUsers)
+        }
+setTheColor(newColor)
+
+          setOldWager(gameState.wagers.toNumber())
+          let tdata = data1 
+          tdata.push([new Date().getTime()/1000, gameState.wagers.toNumber()])
+      setData(tdata)
+      let tdata2 = data2
+      tdata2.push([new Date().getTime()/1000, gameState.numusers])
+    setData2(tdata2)
+      console.log(data1)
+        }
+      }
+    })
+  }, [game])
   return ( 
     <Screen>
-      {!connected ? (
-      <WalletMultiButton />) : (<div></div>)}
+    {didLaunch ? (
       <View>
       <div
         style={{
@@ -156,7 +172,7 @@ setData2(tdata2)
                 setWager(0.5*10**9)
                 buttonIt()
               }}>0.5</button>
-      </div> </View>
+      </div> </View>) : (<div></div>)}
     </Screen>
   );
 }

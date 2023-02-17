@@ -16,5 +16,9 @@ cpi = ["no-entrypoint"]
 default = []
 
 [dependencies]
+borsh = "0.9.3"
+
 anchor-lang = "0.26.0"
+clockwork-sdk = "*"
 arrayref = "*"
+

@@ -12,10 +12,10 @@ export { useColorScheme } from "react-native";
 
 /** @deprecated use `usePublicKeys()` instead */
 export function usePublicKey(): PublicKey {
-  const [publicKey, setPublicKey] = useState(window.xnft.solana?.publicKey);
+  const [publicKey, setPublicKey] = useState(window.xnft?.solana?.publicKey);
   useEffect(() => {
-    window.xnft.solana?.on("publicKeyUpdate", () => {
-      setPublicKey(window.xnft.solana.publicKey);
+    window.xnft?.solana?.on("publicKeyUpdate", () => {
+      setPublicKey(window.xnft?.solana.publicKey);
     });
   }, [setPublicKey]);
   return publicKey;
@@ -33,20 +33,20 @@ export function usePublicKeys(): PublicKey {
 
 /** @deprecated use blockchain-specific connections instead */
 export function useConnection(): Connection {
-  const [connection, setConnection] = useState(window.xnft.solana?.connection);
+  const [connection, setConnection] = useState(window.xnft?.solana?.connection);
   useEffect(() => {
-    window.xnft.solana?.on("connectionUpdate", () => {
-      setConnection(window.xnft.solana.connection);
+    window.xnft?.solana?.on("connectionUpdate", () => {
+      setConnection(window.xnft?.solana.connection);
     });
   }, [setConnection]);
   return connection;
 }
 
 export function useSolanaConnection(): Connection {
-  const [connection, setConnection] = useState(window.xnft.solana?.connection);
+  const [connection, setConnection] = useState(window.xnft?.solana?.connection);
   useEffect(() => {
-    window.xnft.solana?.on("connectionUpdate", () => {
-      setConnection(window.xnft.solana.connection);
+    window.xnft?.solana?.on("connectionUpdate", () => {
+      setConnection(window.xnft?.solana.connection);
     });
   }, [setConnection]);
   return connection;
