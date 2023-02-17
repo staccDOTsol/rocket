@@ -1,351 +1,402 @@
-use anchor_lang::prelude::*;
-use anchor_lang::solana_program::clock;
-use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash, Hasher};
-use anchor_lang::solana_program::sysvar;
+use std::mem::size_of;
+
 use borsh::{BorshDeserialize, BorshSerialize};
-use clockwork_sdk::state::AccountMetaData;
-use anchor_lang::solana_program::{system_instruction};
-
-use { 
-    clockwork_sdk::{
-        state::{Thread, ThreadAccount, ThreadResponse, InstructionData},
-    }
-  };
-use anchor_lang::error;
-use arrayref::array_ref;
-
-pub fn calculate_hash<T: Hash>(t: &T) -> u64 {
-    let mut s = DefaultHasher::new();
-    t.hash(&mut s);
-    s.finish()
-}
-
-#[derive(Hash)]
-pub struct HashOfHash {
-    pub(crate) recent_blockhash: u64,
-    pub(crate) user: [u8; 32],
-    pub(crate) clock: [u8; 1]
-}
-#[derive(Copy, Clone,PartialEq, PartialOrd)]
-pub struct U4(u8);
-
-impl U4 {
-    fn new(value: u8) -> U4 {
-        assert!(value <= 0xF, "value must be between 0 and 15");
-        U4(value)
-    }
-    
-    fn get(&self) -> u8 {
-        self.0 & 0xF
-    }
-}
-
-impl std::ops::BitOr for U4 {
-    type Output = Self;
-
-    fn bitor(self, other: Self) -> Self {
-        U4::new(self.get() << 4 | other.get())
-    }
-}
-
-impl BorshSerialize for U4 {
-    fn serialize<W: std::io::Write>(&self, writer: &mut W) -> std::result::Result<(), std::io::Error> {
-        self.get().serialize(writer)
-    }
-}
-
-impl BorshDeserialize for U4 {
-    fn deserialize(buf: &mut &[u8]) -> std::result::Result<U4, std::io::Error> {
-        let value = u8::deserialize(buf)?;
-        Ok(U4::new(value))
-    }
-}
-
-impl std::fmt::Display for U4 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:X}", self.get())
-    }
-}
-
+use anchor_lang::{error, InstructionData, solana_program::system_program, prelude::*};
+use clockwork_sdk::{state::{Thread, ThreadResponse}, ThreadProgram};
 
 declare_id!("7vWEUWH7L9VJCZjVahFwpWstZqfmGTSK122VVtvdvzFz");
 
+
 #[program]
-pub mod rocket {
-    use anchor_lang::solana_program::program::invoke;
+pub mod rpsx {
+    use anchor_lang::{solana_program::instruction::Instruction, system_program::{transfer, Transfer}};
+    use clockwork_sdk::state::Trigger;
 
-    use super::*;
+    pub use super::*;
 
- 
- 
-    pub fn play(ctx: Context<Play>, wen: String)-> Result<ThreadResponse> {
-        
-       let  user = &mut ctx.accounts.user;
-        let recent_blockhashes = &ctx.accounts.recent_blockhashes;
-                let data = recent_blockhashes.data.borrow();
-                let most_recent = array_ref![data, 8, 8];
-                let user_head = user.key();
-               
-
-                let index3 = u64::from_le_bytes(*most_recent);
-                let clock = clock::Clock::get().unwrap().unix_timestamp as u8;
-                let clock_arr: [u8; 1] = [clock];
-                let index = calculate_hash(&HashOfHash {
-                    recent_blockhash: index3,
-                    user: user_head.to_bytes(),
-                    clock: clock_arr
-                });
-                msg!(&index.to_string());
-
+    pub fn new_game(ctx: Context<NewGame>) -> Result<()> {
         let game = &mut ctx.accounts.game;
-        let x = user.x;
-        let y = user.y;
-        game.avec[x as usize][y as usize] = U4(0);
-        msg!("index {}", index.to_string());
-                  let last = index.to_string().chars().nth(0).unwrap() as u8 % 2;
-                  let otherlast = index.to_string().chars().nth(1).unwrap() as u8 % 2;
-                  let someothervalue = index.to_string().chars().nth(2).unwrap();
-                  let someothervalue2 = index.to_string().chars().nth(3).unwrap();
-                  msg!("last {}", last);
-                  msg!("otherlast {}", otherlast);
-                  msg!("someothervalue {}", index);
-                  msg!("index {}", someothervalue2);
-                  if (someothervalue as u8) < 5  {
 
-                    if  user.y.checked_add(otherlast as u8) < Some(64) {
-                     user.y = user.y.checked_add(otherlast as u8).unwrap();
-                    }
-                }
-                else {
-                 
-                    if  user.y.checked_sub(otherlast as u8) >  Some(0) {
-                     user.y = user.y.checked_sub(otherlast as u8).unwrap();
-                    }
-                }
-                if (someothervalue2 as u8)  < 5 {
-                    if  user.x.checked_add(last as u8) < Some(64) {
-                     user.x = user.x .checked_add(last as u8).unwrap();
-                    }
-                }
-                else {
-                    if  user.x.checked_sub(last as u8) > Some(0) {
-                     user.x = user.x.checked_sub(last as u8).unwrap();
-                    }
-                }
-                  let x = user.x;
-                  let y = user.y;
-                  if game.avec[user.x as usize][user.y as usize] != U4(0) {
-                     
-                     // rock beats scissors
-                     // paper beats rock
-                     // scissors beats paper
-                       let otheruser = game.avec[user.x as usize][user.y as usize];
-                      if user.team == U4(3) && otheruser == U4(1) {
-                          game.avec[x as usize][y as usize] = U4(3);
-                          game.onecount-=1;
-                      }
-                      else if user.team == U4(1) && otheruser == U4(2) {
-                          game.avec[x as usize][y as usize] = U4(1);
-                          game.twocount-=1;
-                      }
-                      else if user.team == U4(2) && otheruser == U4(3) {
-                          game.avec[x as usize][y as usize] = U4(2);
-                          game.zerocount-=1;
-                      }
-                      else if user.team == U4(1) && otheruser == U4(3){
-                          game.avec[x as usize][y as usize] = U4(3);
-                          game.onecount-=1;
-                      }
-                      else if user.team == U4(2) && otheruser == U4(1) {
-                          game.avec[x as usize][y as usize] = U4(1);
-                          game.twocount-=1;
-                      }
-                      else if user.team == U4(3) && otheruser == U4(2) {
-                          game.avec[x as usize][y as usize] = U4(2);
-                          game.zerocount-=1;
-                      }
-                  }
-                  game.avec[x as usize][y as usize] = user.team;/*
-                  if game.zerocount == 0 && game.onecount == 0  {
-                      // two wins
-                      game.over = true;
-                      game.ss = **game.to_account_info().try_borrow_lamports().unwrap();
-                  }
-                  else   if game.twocount == 0 && game.onecount == 0  {
-                      // three wins
-                      game.over = true;
-                      game.ss = **game.to_account_info().try_borrow_lamports().unwrap();
-                  }
-                  else      if game.zerocount == 0 && game.twocount == 0  {
-                      // one wins
-                      game.over = true;
-                      game.ss = **game.to_account_info().try_borrow_lamports().unwrap();
-                  }
-                 */
-                  Ok(ThreadResponse {
-                      next_instruction: None,
-                      kickoff_instruction: None,
-                  })
+        // Initialize the game account.
+        game.bump = *ctx.bumps.get("game").unwrap();
+        game.board = new_board();
+        game.is_open = true;
+        game.num_players_total = 0;
+        game.num_players_rock = 0;
+        game.num_players_paper = 0;
+        game.num_players_scissors = 0; 
+        game.started_at = Clock::get().unwrap().unix_timestamp;
+
+        Ok(())
     }
 
-    pub fn join(ctx: Context<Join>, wager: u64, wen: String, team: U4, x:u8, y:u8) -> Result<()> {
+   
+    // pub fn join(ctx: Context<Join>, wager: u64, wen: String, team: U4, x:u8, y:u8) -> Result<()> {
+    pub fn new_player(ctx: Context<NewPlayer>, team: Team) -> Result<()> {
+        let authority = &ctx.accounts.authority;
         let game = &mut ctx.accounts.game;
-        let user = &mut ctx.accounts.user;
-      
-        if team <= U4(0) || team > U4(3)  {
-            return Err(RocketError::BadTeam.into());
-        }  
-        user.wen = wen;
-        user.authority = ctx.accounts.authority.key();
-      
-        user.team = team;
-        
-        user.x = x;
-        user.y = y;
-        if team == U4(3) {
-            game.zerocount+=1;
+        let player = &mut ctx.accounts.player;
+
+        // Increment the game's player count.
+        game.num_players_total = game.num_players_total.checked_add(1).unwrap();
+        match team { 
+            Team::Rock => {
+                game.num_players_rock = game.num_players_rock.checked_add(1).unwrap();
+            }
+            Team::Paper => {
+                game.num_players_paper = game.num_players_paper.checked_add(1).unwrap();
+            }
+            Team::Scissors => {
+                game.num_players_scissors = game.num_players_scissors.checked_add(1).unwrap();
+            }
         }
-        else if team == U4(1) {
-            game.onecount+=1;
-        }
-        else if team == U4(2) {
-            game.twocount+=1;
-        }
-        if game.avec[x as usize][y as usize] != U4(0) {
-            return Err(RocketError::AlreadyClaimed.into());
-        }
-        game.avec[x as usize][y as usize] = team;
-        if **ctx.accounts.authority.try_borrow_lamports()? < wager {
-            return Err(RocketError::BadArtithmetic.into());
-        }
-        invoke(
-            &system_instruction::transfer(ctx.accounts.authority.key, &game.key(), 1_000_000),
-            &[
-                ctx.accounts.authority.to_account_info().clone(),
-                game.to_account_info().clone(),
-                ctx.accounts.system_program.to_account_info().clone(),
-            ],
+
+        // Initialize the player account.
+        player.authority = authority.key();
+        player.bump = *ctx.bumps.get("authority").unwrap();
+        player.team = team;
+
+        Ok(())
+    }
+
+    pub fn new_piece(ctx: Context<NewPiece>, x: u64, y: u64)-> Result<()> {
+        let authority = &ctx.accounts.authority;
+        let game = &mut ctx.accounts.game;
+        let player = &mut ctx.accounts.player;
+        let piece = &mut ctx.accounts.piece;
+        let system_program = &ctx.accounts.system_program;
+        let thread = &ctx.accounts.thread;
+        let thread_program = &ctx.accounts.thread_program;
+       
+        // Add a piece to the board.
+        let board_position = &game.board[x as usize][y as usize];
+        require!(board_position.is_none(), GameError::BoardPositionOccupied);
+        game.board[x as usize][y as usize] = Some(player.team.clone());
+
+        // Spawn a thread to move this piece.
+        clockwork_sdk::cpi::thread_create(
+            CpiContext::new_with_signer(
+                thread_program.to_account_info(),
+                clockwork_sdk::cpi::ThreadCreate {
+                    authority: game.to_account_info(),
+                    payer: authority.to_account_info(),
+                    system_program: system_program.to_account_info(),
+                    thread: thread.to_account_info()
+                },
+                &[&[SEED_GAME, &[game.bump]]]
+            ),
+            format!("{}", game.num_pieces),
+            Instruction {
+                program_id: crate::ID,
+                accounts: crate::accounts::MovePiece {
+                    game: game.key(),
+                    piece: piece.key(),
+                    thread: thread.key()
+                }.to_account_metas(None),
+                data: crate::instruction::MovePiece{}.data(),
+            }.into(),
+            Trigger::Immediate,
         )?;
-        user.wager = wager;
-        drop(game);
-        drop(user);
+
+        // Transfer SOL from authority to the thread.
+        // TODO migrate to v2, and remove this extra CPI.
+        transfer(
+            CpiContext::new(
+                system_program.to_account_info(),
+                Transfer {
+                    from: authority.to_account_info(),
+                    to: thread.to_account_info(),
+                },
+            ),
+            1000 * 1000 // Enough for 1000 moves
+        )?;
+        
+        // Initialize the piece account.
+        piece.authority = authority.key();
+        piece.bump = *ctx.bumps.get("piece").unwrap();
+        piece.id = game.num_pieces;
+        piece.thread = thread.key();
+        piece.x = x; 
+        piece.y = y; 
+
+        // Increment piece counters.
+        game.num_pieces = game.num_pieces.checked_add(1).unwrap();
+        player.num_pieces = player.num_pieces.checked_add(1).unwrap();
 
         Ok(())
     }
 
-    pub fn initialize(ctx: Context<Initialize>, wen: String) -> Result<()> {
-     
+    pub fn move_piece(ctx: Context<MovePiece>) -> Result<ThreadResponse> {
         let game = &mut ctx.accounts.game;
-game.wen = wen;
+        let piece = &mut ctx.accounts.piece;
 
-let game_size = 64;
-game.avec = vec![vec![U4::new(0); game_size]; game_size];
+        // Get this piece's current team.
+        let maybe_our_team = &game.board[piece.x as usize][piece.y as usize];
+        require!(maybe_our_team.is_some(), GameError::InvalidBoardPosition);
 
-        game.authority = ctx.accounts.authority.key();
-        let clock = clock::Clock::get().unwrap().unix_timestamp as i64;
+        // The the closest capturable positions on the board.
+        let board = Box::new(game.board.clone());
+        let our_team = maybe_our_team.clone().unwrap();
+        let closest_capturable_positions = grid_search(piece.x as usize, piece.y as usize, board, 0, &our_team);
 
-        game.start_time = clock;
+        // Determine a direction of travel based on where the closest capturable pieces are relative to our position.
+        let mut dir_x: i64 = 0;
+        let mut dir_y: i64 = 0;
+        for pos in closest_capturable_positions {
+            if pos.0.0 > piece.x as usize {
+                dir_x += 1;
+            } else if pos.0.0 < piece.y as usize {
+                dir_x -= 1;
+            }
+            if pos.0.1 > piece.y as usize {
+                dir_y += 1;
+            } else if pos.0.1 < piece.y as usize {
+                dir_y -= 1;
+            }
+        }
 
-        drop(game);
-        Ok(())
+        // Move the piece.
+        game.board[piece.x as usize][piece.y as usize] = None;
+        if dir_x > 0 {
+            piece.x = piece.x.saturating_add(1);
+        } else if dir_x < 0 {
+            piece.x = piece.x.saturating_sub(1);
+        };
+        if dir_y > 0 {
+            piece.y = piece.y.saturating_add(1);
+        } else if dir_y < 0 {
+            piece.y = piece.y.saturating_sub(1);
+        };
+
+        // If we've landed on a capturable piece, then capture it.
+        let new_board_position = &game.board[piece.x as usize][piece.y as usize];
+        if our_team.can_capture(new_board_position) {
+            game.board[piece.x as usize][piece.y as usize] = Some(our_team);
+        }
+         
+        Ok(ThreadResponse::default())
     }
 }
 
+
 #[derive(Accounts)]
-#[instruction(wen: String)]
-pub struct Play <'info> {
-    #[account(mut,
-        seeds=["gamegame".as_bytes(), &game.authority.to_bytes()], 
-        bump)]
-    pub game: Account<'info, Game>,
+pub struct NewGame<'info> {
     #[account(
-        signer,
+        init, 
+        payer = payer,
+        space = size_of::<Game>(),
+        seeds = [SEED_GAME], 
+        bump
     )]
-    pub thread: Box<Account<'info, Thread>>,
+    pub game: Account<'info, Game>,
+
     #[account(mut)]
-    /// CHECK: tsignore
+    pub payer: Signer<'info>,
+
+    #[account(address = system_program::ID)]
+    pub system_program: Program<'info, System>
+}
+
+#[derive(Accounts)]
+#[instruction(team: Team)]
+pub struct NewPlayer<'info> {
+    #[account(mut)]
+    pub authority: Signer<'info>,
+
+    #[account(
+        mut,
+        seeds=[SEED_GAME], 
+        bump = game.bump,
+        constraint = game.is_open
+    )]
+    pub game: Account<'info, Game>,
+
+    #[account(
+        init, 
+        payer = authority,
+        space = size_of::<Player>(),
+        seeds = [SEED_PLAYER, authority.key().as_ref()], 
+        bump
+    )]
+    pub player: Account<'info, Player>,
+
+    #[account(address = system_program::ID)]
+    pub system_program: Program<'info, System>
+}
+
+#[derive(Accounts)]
+#[instruction(x: u64, y: u64)]
+pub struct NewPiece<'info> {
+    #[account(mut)]
     pub authority: AccountInfo <'info>,
-    #[account(mut,
-        seeds=["gamegame".as_bytes(), &game.key().to_bytes(), &user.authority.to_bytes(), &user.wen.as_bytes()], 
-        bump)]
-        pub user: Account<'info, User>,
-        #[account(address = sysvar::recent_blockhashes::id())]
-        /// CHECK:
-        recent_blockhashes: AccountInfo<'info>,
-}
-#[derive(Accounts)]
-#[instruction(wen: String)]
-pub struct Initialize <'info> {
-    #[account(init, 
-        payer=authority,
-        space=10000 ,
-        seeds=["gamegame".as_bytes(),&authority.key().to_bytes()], 
-        bump)]
-    pub game: Account<'info, Game>,
-    #[account(mut)]
-    pub authority: Signer<'info>,
-    pub system_program: Program<'info, System>
-}
-#[derive(Accounts)]
-#[instruction(wager: u64, wen: String, team: U4)]
 
-pub struct Join <'info> {
-    #[account(mut,
-        seeds=["gamegame".as_bytes(),&game.authority.to_bytes()], 
-        bump)]
+    #[account(mut, seeds=[SEED_GAME], bump = game.bump)]
     pub game: Account<'info, Game>,
-    #[account(init, 
-        payer=authority,
-        space=150,
-        seeds=["gamegame".as_bytes(), &game.key().to_bytes(), &authority.key().to_bytes(), &wen.as_bytes()], 
-        bump)]
-    pub user: Account<'info, User>,
-    #[account(mut)]
-    pub authority: Signer<'info>,
-    #[account(address = sysvar::recent_blockhashes::id())]
-    /// CHECK:
-    recent_blockhashes: AccountInfo<'info>,
-    pub system_program: Program<'info, System>
+
+    #[account(
+        init,
+        payer = authority,
+        space = size_of::<Piece>(),
+        seeds = [SEED_PIECE, game.num_pieces.to_le_bytes().as_ref()],
+        bump
+    )]
+    pub piece: Account<'info, Piece>,
+
+    #[account(mut, seeds=[SEED_PLAYER, authority.key().as_ref()], bump = player.bump)]
+    pub player: Account<'info, Player>,
+
+    #[account(address = system_program::ID)]
+    pub system_program: Program<'info, System>,
+
+    #[account(address = Thread::pubkey(game.key(), format!("{}", game.num_pieces)))]
+    pub thread: SystemAccount<'info>,
+
+    #[account(address = clockwork_sdk::ID)]
+    pub thread_program: Program<'info, ThreadProgram>,
 }
 
+#[derive(Accounts)]
+pub struct MovePiece<'info> {
+    #[account(mut, seeds=[SEED_GAME], bump = game.bump)]
+    pub game: Account<'info, Game>,
+
+    #[account(mut, seeds=[SEED_PIECE], bump = piece.bump)]
+    pub piece: Account<'info, Piece>,
+
+    #[account(signer, address = piece.thread)]
+    pub thread: Box<Account<'info, Thread>>,
+}
 
 #[account]
-pub struct User  {
-    pub authority: Pubkey , 
-    pub wager: u64,
-    pub dead: bool,
-    pub team: U4,
-    pub thread: Pubkey,
-    pub x: u8,
-    pub y: u8,
-    pub claimed: bool,
-    pub wen: String,
-    pub committed: u64
+pub struct Player  {
+    pub authority: Pubkey, 
+    pub bump: u8,
+    pub num_pieces: u64,
+    pub team: Team,
 }
+
 #[account]
 pub struct Game  {
-    pub over: bool,
-    pub ss: u64,
-    pub start_time: i64 , 
-    crash_time: i64 ,
-    pub wagers: u64,
-    pub numusers: u8,
+    pub bump: u8,
+    pub board: Board,
+    pub is_open: bool,
+    pub num_pieces: u64,
+    pub num_players_total: u64,
+    pub num_players_rock: u64,
+    pub num_players_paper: u64,
+    pub num_players_scissors: u64,
+    pub started_at: i64,
+}
+
+#[account]
+pub struct Piece {
     pub authority: Pubkey,
-    pub lastAward: u64,
-    pub avec: Vec<Vec<U4>>,
-    pub onecount: u64,
-    pub zerocount: u64,
-    pub twocount: u64,
-    pub wen: String
+    pub bump: u8,
+    pub id: u64,
+    pub thread: Pubkey,
+    pub x: u64,
+    pub y: u64,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq, PartialOrd)]
+#[repr(u8)]
+pub enum Team {
+   Rock = 0b00,
+   Paper = 0b01,
+   Scissors = 0b10,
+}
+
+impl Team {
+    pub fn can_capture(&self, team: &Option<Team>) -> bool {
+        match team {
+            None => false,
+            Some(team) => {
+                match team {
+                    Team::Rock => self.eq(&Team::Paper),
+                    Team::Paper => self.eq(&Team::Scissors),
+                    Team::Scissors => self.eq(&Team::Rock),
+                }
+            }
+        }
+    }
+}
+
+pub type Board = Vec<Vec<Option<Team>>>;
+
+pub fn new_board() -> Board {
+    vec![vec![None; BOARD_SIZE]; BOARD_SIZE]   
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct Position((usize, usize));
+
+static BOARD_SIZE: usize = 64;
+
+static SEED_GAME: &[u8] = b"game";
+static SEED_PLAYER: &[u8] = b"player";
+static SEED_PIECE: &[u8] = b"piece";
+
+fn grid_search(x: usize, y: usize, board: Box<Board>, size: usize, our_team: &Team) -> Vec<Position> {
+    // Recursive base case.
+    if size.gt(&BOARD_SIZE) {
+        return vec![];
+    }  
+
+    let mut capturable_positions: Vec<Position> = vec![]; 
+
+    let y_pos_top = (y + size).min(BOARD_SIZE - 1);
+    let y_pos_bottom = y.saturating_sub(size);
+    for x_pos in x.saturating_sub(size)..(x + size).min(BOARD_SIZE - 1) {
+        dbg!(x_pos);
+        if dbg!(our_team.can_capture(&board[x_pos][y_pos_top])) {
+            capturable_positions.push(Position((x_pos, y_pos_top)));
+        }
+        if dbg!(our_team.can_capture(&board[x_pos][y_pos_bottom])) {
+            capturable_positions.push(Position((x_pos, y_pos_bottom)));
+        }
+    }
+    
+    let x_pos_left = x.saturating_sub(size);
+    let x_pos_right = (x + size).min(BOARD_SIZE - 1);
+    for y_pos in y.saturating_sub(size)..(y + size).min(BOARD_SIZE - 1) {
+        dbg!(y_pos);
+        if dbg!(our_team.can_capture(&board[x_pos_left][y_pos])) {
+            capturable_positions.push(Position((x_pos_left, y_pos)));
+        }
+        if dbg!(our_team.can_capture(&board[x_pos_right][y_pos])) {
+            capturable_positions.push(Position((x_pos_right, y_pos)));
+        }
+    }
+
+    if capturable_positions.is_empty() {
+        grid_search(x, y, board, size + 1, our_team)
+    } else {
+        capturable_positions
+    }
 }
 
 #[error_code]
-pub enum RocketError {
-    #[msg("Encountered an arithmetic error")]
-    BadArtithmetic,
-    #[msg("some1 lives here")]
-    AlreadyClaimed,
-    #[msg("naughty naughty")]
-    BadTeam,
+pub enum GameError {
+    #[msg("This board position is already occupied by another piece")]
+    BoardPositionOccupied,
+    #[msg("Invalid board position")]
+    InvalidBoardPosition,
+}
+
+
+#[cfg(test)]
+mod tests {
+    use crate::{Team, grid_search, new_board};
+
+    #[test]
+    fn test_grid_search() {
+        let mut board = new_board();
+        board[1][3] = Some(Team::Rock);
+        board[1][1] = Some(Team::Scissors);
+        board[3][3] = Some(Team::Scissors);
+        board[2][3] = Some(Team::Paper);
+
+        let positions = dbg!(grid_search(3, 1, Box::new(board), 1, &Team::Rock));
+        assert!(positions.len() == 2);
+    }
 }
