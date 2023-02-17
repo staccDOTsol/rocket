@@ -19,7 +19,7 @@ pub mod rpsx {
 
         // Initialize the game account.
         game.bump = *ctx.bumps.get("game").unwrap();
-        game.board = new_board(BOARD_SIZE);
+        game.board = new_board();
         game.is_open = true;
         game.num_players_total = 0;
         game.num_players_rock = 0;
@@ -319,8 +319,8 @@ impl Team {
 
 pub type Board = Vec<Vec<Option<Team>>>;
 
-pub fn new_board(size: usize) -> Board {
-    vec![vec![None; size]; size]   
+pub fn new_board() -> Board {
+    vec![vec![None; BOARD_SIZE]; BOARD_SIZE]   
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -382,11 +382,11 @@ pub enum GameError {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Team, grid_search, BOARD_SIZE, new_board};
+    use crate::{Team, grid_search, new_board};
 
     #[test]
     fn test_grid_search() {
-        let mut board = new_board(BOARD_SIZE);
+        let mut board = new_board();
         board[1][3] = Some(Team::Rock);
         board[1][1] = Some(Team::Scissors);
         board[3][3] = Some(Team::Scissors);
