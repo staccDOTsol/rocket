@@ -1,68 +1,83 @@
 import { PublicKey, Connection } from "@solana/web3.js"
 import BN from "bn.js" // eslint-disable-line @typescript-eslint/no-unused-vars
-import * as borsh from "@project-serum/borsh" // eslint-disable-line @typescript-eslint/no-unused-vars
+import * as borsh from "@coral-xyz/borsh" // eslint-disable-line @typescript-eslint/no-unused-vars
+import * as types from "../types" // eslint-disable-line @typescript-eslint/no-unused-vars
 import { PROGRAM_ID } from "../programId"
 
 export interface GameFields {
-  over: boolean
-  startTime: BN
-  crashTime: BN
-  wagers: BN
-  numusers: number
-  authority: PublicKey
-  lastAward: BN
+  bump: number
+  board: typeof types.Team[][]
+  isOpen: boolean
+  numPieces: BN
+  numPlayersTotal: BN
+  numPlayersRock: BN
+  numPlayersPaper: BN
+  numPlayersScissors: BN
+  startedAt: BN
 }
 
 export interface GameJSON {
-  over: boolean
-  startTime: string
-  crashTime: string
-  wagers: string
-  numusers: number
-  authority: string
-  lastAward: string
+  bump: number
+  board: typeof types.Team[][]
+  isOpen: boolean
+  numPieces: string
+  numPlayersTotal: string
+  numPlayersRock: string
+  numPlayersPaper: string
+  numPlayersScissors: string
+  startedAt: string
 }
 
 export class Game {
-  readonly over: boolean
-  readonly startTime: BN
-  readonly crashTime: BN
-  readonly wagers: BN
-  readonly numusers: number
-  readonly authority: PublicKey
-  readonly lastAward: BN
+  readonly bump: number
+  readonly board: typeof types.Team[][]
+  readonly isOpen: boolean
+  readonly numPieces: BN
+  readonly numPlayersTotal: BN
+  readonly numPlayersRock: BN
+  readonly numPlayersPaper: BN
+  readonly numPlayersScissors: BN
+  readonly startedAt: BN
 
   static readonly discriminator = Buffer.from([
     27, 90, 166, 125, 74, 100, 121, 18,
   ])
 
   static readonly layout = borsh.struct([
-    borsh.bool("over"),
-    borsh.i64("startTime"),
-    borsh.i64("crashTime"),
-    borsh.u64("wagers"),
-    borsh.u8("numusers"),
-    borsh.publicKey("authority"),
-    borsh.u64("lastAward"),
+    borsh.u8("bump"),
+    borsh.u8("board"),
+    borsh.bool("isOpen"),
+    borsh.u64("numPieces"),
+    borsh.u64("numPlayersTotal"),
+    borsh.u64("numPlayersRock"),
+    borsh.u64("numPlayersPaper"),
+    borsh.u64("numPlayersScissors"),
+    borsh.i64("startedAt"),
   ])
 
   constructor(fields: GameFields) {
-    this.over = fields.over
-    this.startTime = fields.startTime
-    this.crashTime = fields.crashTime
-    this.wagers = fields.wagers
-    this.numusers = fields.numusers
-    this.authority = fields.authority
-    this.lastAward = fields.lastAward
+    this.bump = fields.bump
+    this.board = fields.board
+    this.isOpen = fields.isOpen
+    this.numPieces = fields.numPieces
+    this.numPlayersTotal = fields.numPlayersTotal
+    this.numPlayersRock = fields.numPlayersRock
+    this.numPlayersPaper = fields.numPlayersPaper
+    this.numPlayersScissors = fields.numPlayersScissors
+    this.startedAt = fields.startedAt
   }
 
-  static async fetch(c: Connection, address: PublicKey): Promise<Game | null> {
+  static async fetch(
+    c: Connection,
+    address: PublicKey,
+    programId: PublicKey = PROGRAM_ID
+  ): Promise<Game | null> {
     const info = await c.getAccountInfo(address)
 
     if (info === null) {
       return null
     }
-    if (!info.owner.equals(PROGRAM_ID)) {
+    if (!info.owner.equals(programId)) {
       throw new Error("account doesn't belong to this program")
     }
 
@@ -71,7 +86,8 @@ export class Game {
 
   static async fetchMultiple(
     c: Connection,
-    addresses: PublicKey[]
+    addresses: PublicKey[],
+    programId: PublicKey = PROGRAM_ID
   ): Promise<Array<Game | null>> {
     const infos = await c.getMultipleAccountsInfo(addresses)
 
@@ -79,7 +95,7 @@ export class Game {
       if (info === null) {
         return null
       }
-      if (!info.owner.equals(PROGRAM_ID)) {
+      if (!info.owner.equals(programId)) {
         throw new Error("account doesn't belong to this program")
       }
 
@@ -95,37 +111,43 @@ export class Game {
     const dec = Game.layout.decode(data.slice(8))
 
     return new Game({
-      over: dec.over,
-      startTime: dec.startTime,
-      crashTime: dec.crashTime,
-      wagers: dec.wagers,
-      numusers: dec.numusers,
-      authority: dec.authority,
-      lastAward: dec.lastAward,
+      bump: dec.bump,
+      board: dec.board,
+      isOpen: dec.isOpen,
+      numPieces: dec.numPieces,
+      numPlayersTotal: dec.numPlayersTotal,
+      numPlayersRock: dec.numPlayersRock,
+      numPlayersPaper: dec.numPlayersPaper,
+      numPlayersScissors: dec.numPlayersScissors,
+      startedAt: dec.startedAt,
     })
   }
 
   toJSON(): GameJSON {
     return {
-      over: this.over,
-      startTime: this.startTime.toString(),
-      crashTime: this.crashTime.toString(),
-      wagers: this.wagers.toString(),
-      numusers: this.numusers,
-      authority: this.authority.toString(),
-      lastAward: this.lastAward.toString(),
+      bump: this.bump,
+      board: this.board,
+      isOpen: this.isOpen,
+      numPieces: this.numPieces.toString(),
+      numPlayersTotal: this.numPlayersTotal.toString(),
+      numPlayersRock: this.numPlayersRock.toString(),
+      numPlayersPaper: this.numPlayersPaper.toString(),
+      numPlayersScissors: this.numPlayersScissors.toString(),
+      startedAt: this.startedAt.toString(),
     }
   }
 
   static fromJSON(obj: GameJSON): Game {
     return new Game({
-      over: obj.over,
-      startTime: new BN(obj.startTime),
-      crashTime: new BN(obj.crashTime),
-      wagers: new BN(obj.wagers),
-      numusers: obj.numusers,
-      authority: new PublicKey(obj.authority),
-      lastAward: new BN(obj.lastAward),
+      bump: obj.bump,
+      board: obj.board,
+      isOpen: obj.isOpen,
+      numPieces: new BN(obj.numPieces),
+      numPlayersTotal: new BN(obj.numPlayersTotal),
+      numPlayersRock: new BN(obj.numPlayersRock),
+      numPlayersPaper: new BN(obj.numPlayersPaper),
+      numPlayersScissors: new BN(obj.numPlayersScissors),
+      startedAt: new BN(obj.startedAt),
     })
   }
 }

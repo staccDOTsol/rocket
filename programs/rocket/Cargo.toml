@@ -22,3 +22,6 @@ clockwork-sdk = "*"
 arrayref = "*"
 mpl-token-metadata = {features=["no-entrypoint"]}
 anchor-spl = "0.26.0"
+mpl-bubblegum = { features=["no-entrypoint", "cpi"]}
+spl-account-compression = { version="0.1.8", features = ["cpi"] }
+spl-noop = { version = "0.1.3", features = ["no-entrypoint"] }

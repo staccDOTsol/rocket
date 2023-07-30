@@ -7,9 +7,8 @@ import { HomeScreen } from "./screens/HomeScreen";
 
 function App() {
   return (
-    <RecoilRoot>
-      <Wallet>
-        <HomeScreen/></Wallet>
+    <RecoilRoot> 
+        <HomeScreen/>
     </RecoilRoot>
   );
 }

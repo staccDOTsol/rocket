@@ -5,7 +5,12 @@
     },
     "dependencies": {
         "@coral-xyz/anchor": "^0.26.0",
-        "@solana/web3.js": "^1.73.2"
+        "@metaplex-foundation/mpl-bubblegum": "0.4.2",
+        "@metaplex-foundation/umi": "^0.8.7",
+        "@metaplex-foundation/umi-bundle-defaults": "^0.8.7",
+        "@metaplex-foundation/umi-bundle-tests": "^0.8.7",
+        "@solana/spl-account-compression": "^0.1.9",
+        "@solana/web3.js": "^1.78.0"
     },
     "devDependencies": {
         "@types/bn.js": "^5.1.0",

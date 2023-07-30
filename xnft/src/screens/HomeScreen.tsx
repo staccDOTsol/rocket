@@ -1,30 +1,39 @@
 import React, { useEffect, useState } from "react";
 import { Text, View } from "react-native";
-import * as IDL from '../../../target/idl/rocket.json'
+import { Rpsx as IDL } from '../../../target/types/rpsx'
 import * as anchor from '@project-serum/anchor'
 import { Screen } from "../components/Screen";
 import { Connection, PublicKey, SystemProgram, SYSVAR_RECENT_BLOCKHASHES_PUBKEY, Transaction } from "@solana/web3.js";
 import { Game } from '../client/accounts/Game'
 import { PROGRAM_ID } from "../client/programId";
-import { useWallet } from "@solana/wallet-adapter-react";
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { Chart } from 'react-charts'
 
 import { join } from '../client/instructions/join'
 import { play } from '../client/instructions/play'
-import { initialize } from "../client/instructions";
+import { newGame } from "../client/instructions";
 import { useDidLaunch, useSolanaConnection } from "../hooks/xnft-hooks";
 
 let startTime = new Date().getTime()/1000
 export function HomeScreen() {
+
+  const [setTxs, txs] = useState<Transaction[]>([])
     let [gameState, setGameState] = useState<any>()
     let [theColor, setTheColor] = useState<string>('#43A19E')
     let [wager, setWager] = useState<number>(0.01*10**9)
+    useEffect(() => {
+      if (txs.length == 3){
+
+  // @ts-ignore
+   window.xnft?.solana.sendAll(txs)
+  // @ts-ignore
+  setTxs([])
+      }
+    }, [txs])
 async function joinIt(){
 
   let user = (PublicKey.findProgramAddressSync(
     // @ts-ignore
-    [Buffer.from("gamegame"),game.toBuffer(), window.xnft?.solana?.publicKey.toBuffer()]
+    [Buffer.from("game"),game.toBuffer(), window.xnft?.solana?.publicKey.toBuffer()]
   , PROGRAM_ID))[0]
   let wen = new Date().getTime()
   const tx2 = await join( {wager:new anchor.BN( wager), wen:     (wen.toString() )},{
@@ -38,8 +47,8 @@ async function joinIt(){
     let tx = new Transaction().add(tx2)
     tx.feePayer = window.xnft?.solana.publicKey 
     tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash 
-  // @ts-ignore
-  await window.xnft?.solana.sendAndConfirm(tx)
+    // @ts-ignore
+    await window.xnft?.solana.sendAndConfirm(tx)
   }
    catch (err){
     console.log(err)
@@ -51,7 +60,7 @@ async function buttonIt(){
 
   let user = (PublicKey.findProgramAddressSync(
     // @ts-ignore
-    [Buffer.from("gamegame"),game.toBuffer(), window.xnft?.solana?.publicKey.toBuffer()]
+    [Buffer.from("game"),game.toBuffer(), window.xnft?.solana?.publicKey.toBuffer()]
   , PROGRAM_ID))[0]
   const tx3 = await play(    {wen:  (wen.toString()),wager:new anchor.BN( wager)},{
     game: game,
@@ -65,14 +74,12 @@ async function buttonIt(){
      let tx = new Transaction().add(tx3)
     tx.feePayer = window.xnft?.solana.publicKey 
     tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash 
-  // @ts-ignore
-  await window.xnft?.solana.sendAndConfirm(tx)
+    setTxs([...txs, tx])
   }
    catch (err){
     console.log(err)
    }
 }
-    let wallet = useWallet()
   let [data1, setData] = useState<any>([])
   let [data2, setData2] = useState<any>([])
   const data = React.useMemo(
@@ -106,7 +113,7 @@ async function buttonIt(){
 
   const connection = new Connection("https://rpc.helius.xyz/?api-key=8913a285-a5ef-4c35-8d80-03fb276eff2f")
   let game = (PublicKey.findProgramAddressSync(
-    [Buffer.from("gamegame")]
+    [Buffer.from("game")]
   , PROGRAM_ID))[0]/*
   */
  useEffect(() => {
