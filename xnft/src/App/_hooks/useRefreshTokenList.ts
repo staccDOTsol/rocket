@@ -9,7 +9,7 @@ import { useConnection } from "react-xnft";
 
 const refreshtime = 1000 * 60;
 const count = 250;
-const url = `https://api.mainnet.orca.so/v1/whirlpool/list`;
+const url = `https://api.devnet.orca.so/v1/whirlpool/list`;
 
 function useRefreshTokenList() {
   const dispatch = useDispatch();
@@ -25,7 +25,31 @@ function useRefreshTokenList() {
       const whirlpool_ctx = WhirlpoolContext.from(connection, window.xnft.solana, ORCA_WHIRLPOOL_PROGRAM_ID);
       const whirlpool_client = buildWhirlpoolClient(whirlpool_ctx);
 
-         json= [
+         json= jsona.whirlpools.map((whirlpool: any) => {
+            whirlpool.address = "63cMwvN8eoaD39os9bKP8brmA7Xtov9VxahnPufWCSdg"
+           if (whirlpool.tokenA != undefined){
+            return {
+                price_change_percentage_24h: 2999,
+              "sparkline_in_7d": {
+                  "price": [
+                      25.714175291333696,
+                      21.5108423660364,
+                      15.760286993760705
+                  ]
+              },
+              tokenA: "BRjpCHtyQLNCo8gqRUr8jtdAj5AjPYQaoqbvcZiHok1k",
+                tokenB: "H8UekPGwePSmQ3ttuYGPU1szyFfjZR4N53rymSFwpLPm",
+              "id":  whirlpool.address ,
+              "address": whirlpool.address,
+              "symbol": whirlpool.tokenA.mint.slice(0, 4) + "-" + whirlpool.tokenB.mint.slice(0, 4),
+              "name":whirlpool.tokenA.mint.slice(0, 4) + "-" + whirlpool.tokenB.mint.slice(0, 4),
+              "image": whirlpool.tokenA.logoURI || "https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png?1547042389",
+              "image2": whirlpool.tokenB.logoURI || "https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png?1547042389",
+              "current_price": 26.33325947169108
+            }
+        }
+        })
+         /*[
           {
               "tokenA": "So11111111111111111111111111111111111111112",
               "tokenB": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
@@ -1798,7 +1822,7 @@ function useRefreshTokenList() {
               "image2": "https://assets.coingecko.com/coins/images/22012/large/all-art.PNG?1640590472",
               "current_price": 1003.6588739175315
           }
-      ]
+      ]*/
           console.log(json)
           if (TokenListType.is(json)) {
             dispatch(

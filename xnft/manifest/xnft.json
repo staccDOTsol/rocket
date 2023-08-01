@@ -1,0 +1,21 @@
+{
+  "kind": "app",
+  "storage": "ipfs",
+  "name": "Orca Rebalanc00r", 
+  "version": "1.333.666",
+  "description": "rebalances orca positions (devnet)",
+  "website": "https://twitter.com/STACCoverflow/status/1686268613957746688",
+"tag":  "defi",
+  "royaltiesPercentage": 3,
+  "contact": "https://twitter.com/STACCoverflow",
+  "entrypoints": {
+    "default": {
+      "web": "./dist/index.html"
+    }
+  },
+  "icon": {
+    "sm": "./rocket.jpg"
+
+  },
+"screenshots": ["1.png", "2.png", "3.png"]
+}

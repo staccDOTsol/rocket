@@ -7,4 +7,4 @@ console.log(bs58.encode([
     143,  63,  68, 191
   ]))
 
-console.log(new Uint8Array(bs58.decode("94NZ1rQsvqHyZu1B71KwVT9B6sWm4h2Q1f6d6aXoJ6vB")))
+console.log(new Uint8Array(bs58.decode("Gf3sbc5Jb62jH7WcTr3WSNGDQLk1w6wcKMZXKK1SC1E6")))

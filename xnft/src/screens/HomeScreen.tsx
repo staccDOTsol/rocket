@@ -111,7 +111,7 @@ async function buttonIt(){
   const didLaunch = useDidLaunch()
  
 
-  const connection = new Connection("https://rpc.helius.xyz/?api-key=8913a285-a5ef-4c35-8d80-03fb276eff2f")
+  const connection = new Connection("https://devnet.helius-rpc.com/?api-key=064c7b28-5886-4b49-a2b0-008413f6167a")
   let game = (PublicKey.findProgramAddressSync(
     [Buffer.from("game")]
   , PROGRAM_ID))[0]/*

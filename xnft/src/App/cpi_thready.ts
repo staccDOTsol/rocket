@@ -223,6 +223,26 @@
           "isSigner": true
         },
         {
+          "name": "tokenOwnerAccountA",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenOwnerAccountB",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mintA",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "mintB",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "positionTokenAccount",
           "isMut": true,
           "isSigner": false
@@ -256,6 +276,11 @@
           "name": "recentBlockhashes",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": false
         }
       ],
       "args": [
@@ -272,7 +297,7 @@
       "accounts": [
         {
           "name": "hydra",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true
         },
         {
@@ -311,6 +336,16 @@
           "isSigner": false
         },
         {
+          "name": "mintA",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "mintB",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "tokenVaultA",
           "isMut": true,
           "isSigner": false
@@ -332,6 +367,24 @@
         },
         {
           "name": "authority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The Solana system program."
+          ]
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
           "isMut": false,
           "isSigner": false
         }
@@ -676,6 +729,247 @@
       "returns": {
         "defined": "ThreadResponse"
       }
+    },
+    {
+      "name": "dcaCreate",
+      "accounts": [
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "authorityAVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "aMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "authorityBVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "dca",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "dcaAVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "dcaBVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "whirlpool",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "otherAmountThreshold",
+          "type": "u64"
+        },
+        {
+          "name": "sqrtPriceLimit",
+          "type": "u128"
+        },
+        {
+          "name": "amountSpecifiedIsInput",
+          "type": "bool"
+        },
+        {
+          "name": "aToB",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "dcaDelete",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The authority (owner) of the dca."
+          ]
+        },
+        {
+          "name": "closeTo",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address to return the data rent lamports to."
+          ]
+        },
+        {
+          "name": "dca",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "swap",
+      "accounts": [
+        {
+          "name": "authorityAVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authorityBVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "dca",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "dcaAVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "dcaBVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "dcaThread",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "oracle",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "orcaWhirlpoolProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "whirlpool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "whirlpoolTokenAVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "whirlpoolTokenBVault",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Authority",
+      "docs": [
+        "* Dca"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "Dca",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "whirlpool",
+            "type": "publicKey"
+          },
+          {
+            "name": "aMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "bMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "otherAmountThreshold",
+            "type": "u64"
+          },
+          {
+            "name": "sqrtPriceLimit",
+            "type": "u128"
+          },
+          {
+            "name": "amountSpecifiedIsInput",
+            "type": "bool"
+          },
+          {
+            "name": "aToB",
+            "type": "bool"
+          }
+        ]
+      }
     }
   ],
   "types": [
@@ -690,6 +984,47 @@
           }
         ]
       }
+    },
+    {
+      "name": "DcaSettings",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "amount",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "otherAmountThreshold",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "sqrtPriceLimit",
+            "type": {
+              "option": "u128"
+            }
+          },
+          {
+            "name": "amountSpecifiedIsInput",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "aToB",
+            "type": {
+              "option": "bool"
+            }
+          }
+        ]
+      }
     }
-  ]
+  ],
+  "metadata": {
+    "address": "AmZwbjYqb13PNKGinSZYhLsvoL3jh56H23Vo1CbfpCZ1"
+  }
 }

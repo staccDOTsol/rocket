@@ -31,7 +31,7 @@ export function useWhirlpools () : { [pool: string ] : any } | undefined {
 
   let [whirlpools, setWhirlpools] = useState<any>()
   let twps : any = {}
-  axios.get("https://api.mainnet.orca.so/v1/whirlpool/list")
+  axios.get("https://api.devnet.orca.so/v1/whirlpool/list")
   .then((res) => {
     for (var wp of res.data.whirlpools){
       twps[wp.address] = wp
