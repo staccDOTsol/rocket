@@ -224,12 +224,12 @@
         },
         {
           "name": "tokenOwnerAccountA",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
           "name": "tokenOwnerAccountB",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -323,6 +323,35 @@
         {
           "name": "positionTokenAccount",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rewardOwnerAccount",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "rewardVault",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "rewardOwnerAccount2",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "rewardVault2",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "positionMint",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -442,6 +471,35 @@
         {
           "name": "positionTokenAccount",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rewardOwnerAccount",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "rewardVault",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "rewardOwnerAccount2",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "rewardVault2",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "positionMint",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -568,6 +626,35 @@
           "isSigner": false
         },
         {
+          "name": "rewardOwnerAccount",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "rewardVault",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "rewardOwnerAccount2",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "rewardVault2",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "positionMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "tokenOwnerAccountA",
           "isMut": true,
           "isSigner": false
@@ -590,6 +677,16 @@
         {
           "name": "tokenProgram",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tickArrayLower",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tickArrayUpper",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -658,10 +755,6 @@
         }
       ],
       "args": [
-        {
-          "name": "rewardIndex",
-          "type": "u8"
-        },
         {
           "name": "bump",
           "type": "u8"
